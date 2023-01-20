@@ -1,0 +1,75 @@
+//bibliotecas
+ 
+#include "thingProperties.h"
+#include <Arduino_MKRIoTCarrier.h>
+MKRIoTCarrier carrier;
+ 
+void setup() {
+  // Inicializar a IHM
+  Serial.begin(9600);
+  // Caso o monitor falhe este é o tempo para retomar
+  delay(1500); 
+ 
+  // Definido em thingProperties.h
+  initProperties();
+ 
+  // Conectar o Arduino IoT Cloud
+  ArduinoCloud.begin(ArduinoIoTPreferredConnection);
+  setDebugMessageLevel(2);
+  ArduinoCloud.printDebugInfo();
+ 
+  //Esperar a conexão para iniciar o Carrier
+  while (ArduinoCloud.connected() != 1) {
+    ArduinoCloud.update();
+    delay(500);
+  }
+  delay(500);
+//Carrier esta sem proteção false
+  CARRIER_CASE = false;
+  //ligar sensores do carrier
+  carrier.begin();
+  carrier.display.setRotation(0);
+  delay(1500);
+}
+ //função principal
+void loop() {
+  
+  ArduinoCloud.update();
+  carrier.Buttons.update();
+ 
+
+ // Para ler as temperaturas utilizando o sensor de temperatura e umidade (HTS221) do carrier
+  temperature = carrier.Env.readTemperature();
+  humidity = carrier.Env.readHumidity();;
+ 
+ 
+  if (carrier.Buttons.onTouchDown(TOUCH0)) {
+   //cor do fundo
+    carrier.display.fillScreen(ST77XX_WHITE);
+    //cor da letra
+    carrier.display.setTextColor(ST77XX_RED);
+    //tamanho da letra
+    carrier.display.setTextSize(2);
+ // posição no display
+    carrier.display.setCursor(30, 110);
+   // impressão
+    carrier.display.print("Temp: ");
+    carrier.display.print(temperature);
+    carrier.display.print(" C");
+  }
+ // configurações igual "temperature"
+  if (carrier.Buttons.onTouchDown(TOUCH1)) {
+    carrier.display.fillScreen(ST77XX_WHITE);
+    carrier.display.setTextColor(ST77XX_RED);
+    carrier.display.setTextSize(2);
+ 
+    carrier.display.setCursor(30, 110);
+    carrier.display.print("Humi: ");
+    carrier.display.print(humidity);
+    carrier.display.print(" %");
+  }
+ 
+
+
+ 
+}
